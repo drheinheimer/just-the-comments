@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react'
+import { useCallback, useState, useEffect } from 'react'
 import Navbar from './components/Navbar'
 import CommentsTable from './components/CommentsTable'
 import { saveAs } from 'file-saver'
@@ -35,6 +35,7 @@ function App() {
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string>("");
   const [file, setFile] = useState<File | null>(null);
+  const [isDragOverlay, setIsDragOverlay] = useState<boolean>(false);
 
   const downloadCSV = useCallback(() => {
     const header = ["page", "author", "modified", "text"];
@@ -157,17 +158,53 @@ function App() {
     }
   }, []);
 
-  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
-    e.preventDefault();
-    const droppedFile = e.dataTransfer.files[0];
-    if (droppedFile) {
-      handleFileSelect(droppedFile);
-    }
-  };
+  // Window-level drag and drop handlers for overlay
+  useEffect(() => {
+    let dragCounter = 0;
 
-  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
-    e.preventDefault();
-  };
+    const handleWindowDragEnter = (e: DragEvent) => {
+      e.preventDefault();
+      dragCounter++;
+      if (e.dataTransfer?.items && e.dataTransfer.items.length > 0) {
+        setIsDragOverlay(true);
+      }
+    };
+
+    const handleWindowDragLeave = (e: DragEvent) => {
+      e.preventDefault();
+      dragCounter--;
+      if (dragCounter === 0) {
+        setIsDragOverlay(false);
+      }
+    };
+
+    const handleWindowDragOver = (e: DragEvent) => {
+      e.preventDefault();
+    };
+
+    const handleWindowDrop = (e: DragEvent) => {
+      e.preventDefault();
+      dragCounter = 0;
+      setIsDragOverlay(false);
+      
+      const droppedFile = e.dataTransfer?.files[0];
+      if (droppedFile) {
+        handleFileSelect(droppedFile);
+      }
+    };
+
+    window.addEventListener('dragenter', handleWindowDragEnter);
+    window.addEventListener('dragleave', handleWindowDragLeave);
+    window.addEventListener('dragover', handleWindowDragOver);
+    window.addEventListener('drop', handleWindowDrop);
+
+    return () => {
+      window.removeEventListener('dragenter', handleWindowDragEnter);
+      window.removeEventListener('dragleave', handleWindowDragLeave);
+      window.removeEventListener('dragover', handleWindowDragOver);
+      window.removeEventListener('drop', handleWindowDrop);
+    };
+  }, [handleFileSelect]);
 
   const handleClick = () => {
     const input = document.createElement('input');
@@ -193,43 +230,57 @@ function App() {
           Welcome to Just the Comments
         </Typography> */}
         <Typography variant="body1">
-          Extract comments from your documents. Inspired by <a target="_blank" rel="noopener noreferrer" href="https://www.sumnotes.net">SumNotes</a>, but totally free.
+          Extract comments from your documents.
         </Typography>
-        <Typography variant="body2" color="success.main" sx={{ mt: 1, fontWeight: 500 }}>
+        <Typography variant="body2" sx={{ mt: 1, fontWeight: 500 }}>
           🔒 Your files stay in your browser—nothing is uploaded to any server.
         </Typography>
 
-        {/* Dropzone */}
-        <Box
-          sx={{
-            width: '100%',
-            height: '250px',
-            border: '2px dashed #ccc',
-            borderRadius: 2,
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center',
-            cursor: 'pointer',
-            mt: 3,
-            transition: 'border-color 0.3s ease',
-            '&:hover': {
-              borderColor: '#1976d2',
-              backgroundColor: '#f5f5f5',
-            },
-          }}
-          onDrop={handleDrop}
-          onDragOver={handleDragOver}
-          onClick={handleClick}
-        >
-          <CloudUploadIcon sx={{ fontSize: 48, color: '#666', mb: 2 }} />
-          <Typography variant="h6" color="textSecondary">
-            {file ? file.name : 'Drop files here or click to browse'}
-          </Typography>
+        {/* Upload Button */}
+        <Box sx={{ mt: 3, textAlign: 'center' }}>
+          <Button
+            variant="contained"
+            size="large"
+            startIcon={<CloudUploadIcon />}
+            onClick={handleClick}
+            sx={{ px: 4, py: 1.5 }}
+          >
+            {file ? `Selected: ${file.name}` : 'Upload PDF Document'}
+          </Button>
           <Typography variant="body2" color="textSecondary" sx={{ mt: 1 }}>
-            Supports PDF, DOC, DOCX files
+            Or drag and drop anywhere on this page
           </Typography>
         </Box>
+
+        {/* Full-screen drag overlay */}
+        {isDragOverlay && (
+          <Box
+            sx={{
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              backgroundColor: 'rgba(25, 118, 210, 0.1)',
+              backdropFilter: 'blur(4px)',
+              zIndex: 9999,
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              border: '4px dashed #1976d2',
+              boxSizing: 'border-box',
+            }}
+          >
+            <CloudUploadIcon sx={{ fontSize: 80, color: '#1976d2', mb: 2 }} />
+            <Typography variant="h4" color="primary" sx={{ fontWeight: 600 }}>
+              Drop your PDF here
+            </Typography>
+            <Typography variant="body1" color="textSecondary" sx={{ mt: 1 }}>
+              Release to upload and extract comments
+            </Typography>
+          </Box>
+        )}
 
         {/* Results Section */}
         {loading && (

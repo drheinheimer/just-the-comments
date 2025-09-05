@@ -35,6 +35,16 @@ const columns: GridColDef<CommentEntry>[] = [
     headerName: 'Comment',
     flex: 1,
     minWidth: 300,
+    renderCell: (params) => (
+      <Box sx={{ 
+        whiteSpace: 'normal', 
+        wordWrap: 'break-word', 
+        lineHeight: 1.4,
+        py: 1 
+      }}>
+        {params.value}
+      </Box>
+    ),
   },
 ];
 
@@ -51,6 +61,7 @@ export default function CommentsTable({ comments, loading = false }: CommentsTab
         rows={rowsWithId}
         columns={columns}
         loading={loading}
+        getRowHeight={() => 'auto'}
         initialState={{
           pagination: {
             paginationModel: {
@@ -64,6 +75,13 @@ export default function CommentsTable({ comments, loading = false }: CommentsTab
           '& .MuiDataGrid-cell': {
             whiteSpace: 'normal',
             wordWrap: 'break-word',
+            display: 'flex',
+            alignItems: 'center',
+          },
+          '& .MuiDataGrid-row': {
+            '&:hover': {
+              backgroundColor: 'rgba(0, 0, 0, 0.04)',
+            },
           },
         }}
       />
