@@ -40,7 +40,6 @@ const columns: GridColDef<CommentEntry>[] = [
         whiteSpace: 'normal', 
         wordWrap: 'break-word', 
         lineHeight: 1.4,
-        py: 1 
       }}>
         {params.value}
       </Box>
@@ -69,7 +68,9 @@ export default function CommentsTable({ comments, loading = false }: CommentsTab
             whiteSpace: 'normal',
             wordWrap: 'break-word',
             display: 'flex',
-            alignItems: 'center',
+            alignItems: 'flex-start',
+            paddingTop: '12px',
+            paddingBottom: '12px',
           },
           '& .MuiDataGrid-row': {
             '&:hover': {
