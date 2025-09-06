@@ -1,5 +1,5 @@
 import Box from '@mui/material/Box';
-import { DataGrid, type GridColDef } from '@mui/x-data-grid';
+import { DataGrid, type GridColDef, type GridRowSelectionModel } from '@mui/x-data-grid';
 
 interface CommentEntry {
   page: number;
@@ -11,6 +11,7 @@ interface CommentEntry {
 interface CommentsTableProps {
   comments: CommentEntry[];
   loading?: boolean;
+  onSelectionChange?: (selectionModel: GridRowSelectionModel) => void;
 }
 
 const columns: GridColDef<CommentEntry>[] = [
@@ -47,12 +48,16 @@ const columns: GridColDef<CommentEntry>[] = [
   },
 ];
 
-export default function CommentsTable({ comments, loading = false }: CommentsTableProps) {
+export default function CommentsTable({ comments, loading = false, onSelectionChange }: CommentsTableProps) {
   // Add unique id for DataGrid (required)
   const rowsWithId = comments.map((comment, index) => ({
     id: index,
     ...comment,
   }));
+
+  const handleSelectionChange = (selectionModel: GridRowSelectionModel) => {
+    onSelectionChange?.(selectionModel);
+  };
 
   return (
     <Box sx={{ width: '100%' }}>
@@ -61,6 +66,8 @@ export default function CommentsTable({ comments, loading = false }: CommentsTab
         columns={columns}
         loading={loading}
         getRowHeight={() => 'auto'}
+        checkboxSelection
+        onRowSelectionModelChange={handleSelectionChange}
         disableRowSelectionOnClick
         hideFooter
         sx={{
@@ -76,6 +83,17 @@ export default function CommentsTable({ comments, loading = false }: CommentsTab
             '&:hover': {
               backgroundColor: 'rgba(0, 0, 0, 0.04)',
             },
+          },
+          // Disable checkbox animations for faster response
+          '& .MuiCheckbox-root': {
+            transition: 'none !important',
+            '& .MuiSvgIcon-root': {
+              transition: 'none !important',
+            },
+          },
+          // Also disable any checkbox ripple effects
+          '& .MuiCheckbox-root .MuiTouchRipple-root': {
+            display: 'none',
           },
         }}
       />

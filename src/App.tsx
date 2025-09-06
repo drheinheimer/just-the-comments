@@ -4,6 +4,7 @@ import CommentsTable from './components/CommentsTable'
 import { saveAs } from 'file-saver'
 import { Container, Typography, Box, Button, Fab } from '@mui/material'
 import { CloudUpload as CloudUploadIcon, KeyboardArrowUp as KeyboardArrowUpIcon } from '@mui/icons-material'
+import type { GridRowSelectionModel } from '@mui/x-data-grid'
 
 import * as pdfjsLib from "pdfjs-dist";
 import "pdfjs-dist/build/pdf.worker.min.mjs";
@@ -37,18 +38,49 @@ function App() {
   const [file, setFile] = useState<File | null>(null);
   const [isDragOverlay, setIsDragOverlay] = useState<boolean>(false);
   const [showScrollTop, setShowScrollTop] = useState<boolean>(false);
+  const [selectedRows, setSelectedRows] = useState<number[]>([]);
+
+  const handleSelectionChange = useCallback((selectionModel: GridRowSelectionModel) => {
+    if (selectionModel.type === 'include') {
+      // Use the selected ids directly
+      const selectedIds = Array.from(selectionModel.ids) as number[];
+      setSelectedRows(selectedIds);
+    } else if (selectionModel.type === 'exclude') {
+      // Calculate the inverse - all rows except the excluded ones
+      const excludedIds = new Set(selectionModel.ids);
+      const selectedIds = [];
+      for (let i = 0; i < comments.length; i++) {
+        if (!excludedIds.has(i)) {
+          selectedIds.push(i);
+        }
+      }
+      setSelectedRows(selectedIds);
+    }
+  }, [comments.length]);
 
   const downloadCSV = useCallback(() => {
     const header = ["page", "author", "modified", "text"];
-    const rows = comments.map((c) =>
+    
+    // Filter comments to only include selected rows
+    const selectedComments = selectedRows.length > 0 
+      ? selectedRows.map(index => comments[index]).filter(Boolean)
+      : comments; // If none selected, export all
+      
+    const rows = selectedComments.map((c) =>
       header
         .map((h) => `"${(c as any)[h]?.toString().replace(/"/g, '""') || ""}"`)
         .join(",")
     );
     const csv = [header.join(","), ...rows].join("\n");
     const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
-    saveAs(blob, `${fileName || "comments"}.csv`);
-  }, [comments, fileName]);
+    
+    // Remove file extension from filename
+    const baseFileName = fileName ? fileName.replace(/\.[^/.]+$/, '') : "comments";
+    const filename = selectedRows.length > 0 
+      ? `${baseFileName}_selected.csv`
+      : `${baseFileName}.csv`;
+    saveAs(blob, filename);
+  }, [comments, fileName, selectedRows]);
 
   const handleFileSelect = useCallback(async (file: File | null) => {
     if (!file) return;
@@ -313,12 +345,18 @@ function App() {
               <Button 
                 variant="contained" 
                 onClick={downloadCSV}
-                disabled={comments.length === 0}
               >
-                Download CSV
+                {selectedRows.length > 0 
+                  ? `Download CSV (${selectedRows.length} selected)`
+                  : 'Download CSV'
+                }
               </Button>
             </Box>
-            <CommentsTable comments={comments} loading={loading} />
+            <CommentsTable 
+              comments={comments} 
+              loading={loading}
+              onSelectionChange={handleSelectionChange}
+            />
           </Box>
         )}
 
