@@ -91,13 +91,30 @@ export default function CommentsTable({ comments, loading = false, onSelectionCh
           // Disable checkbox animations for faster response
           '& .MuiCheckbox-root': {
             transition: 'none !important',
+            padding: '0 !important', // Remove padding that creates the circular background space
             '& .MuiSvgIcon-root': {
               transition: 'none !important',
+            },
+            // Remove the circular background entirely
+            '&:before': {
+              display: 'none',
+            },
+            '&:after': {
+              display: 'none', 
+            },
+            // Add instant visual feedback on mousedown
+            '&:active .MuiSvgIcon-root': {
+            //   transform: 'scale(0.9)',
+              opacity: '0.7',
             },
           },
           // Also disable any checkbox ripple effects
           '& .MuiCheckbox-root .MuiTouchRipple-root': {
             display: 'none',
+          },
+          // Remove the circular hover background
+          '& .MuiCheckbox-root:hover': {
+            backgroundColor: 'transparent !important',
           },
           // Optimize row rendering performance
           '& .MuiDataGrid-virtualScroller': {

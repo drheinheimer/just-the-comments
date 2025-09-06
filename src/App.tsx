@@ -74,11 +74,9 @@ function App() {
     const csv = [header.join(","), ...rows].join("\n");
     const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
     
-    // Remove file extension from filename
-    const baseFileName = fileName ? fileName.replace(/\.[^/.]+$/, '') : "comments";
-    const filename = selectedRows.length > 0 
-      ? `${baseFileName}_selected.csv`
-      : `${baseFileName}.csv`;
+    // Remove file extension from filename and add _comments suffix
+    const baseFileName = fileName ? fileName.replace(/\.[^/.]+$/, '') : "file";
+    const filename = `${baseFileName}_comments.csv`;
     saveAs(blob, filename);
   }, [comments, fileName, selectedRows]);
 
