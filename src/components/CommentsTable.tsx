@@ -1,5 +1,6 @@
 import Box from '@mui/material/Box';
 import { DataGrid, type GridColDef, type GridRowSelectionModel } from '@mui/x-data-grid';
+import { useMemo, useCallback } from 'react';
 
 interface CommentEntry {
   page: number;
@@ -49,15 +50,17 @@ const columns: GridColDef<CommentEntry>[] = [
 ];
 
 export default function CommentsTable({ comments, loading = false, onSelectionChange }: CommentsTableProps) {
-  // Add unique id for DataGrid (required)
-  const rowsWithId = comments.map((comment, index) => ({
-    id: index,
-    ...comment,
-  }));
+  // Memoize row data to prevent unnecessary re-computation
+  const rowsWithId = useMemo(() => 
+    comments.map((comment, index) => ({
+      id: index,
+      ...comment,
+    })), [comments]
+  );
 
-  const handleSelectionChange = (selectionModel: GridRowSelectionModel) => {
+  const handleSelectionChange = useCallback((selectionModel: GridRowSelectionModel) => {
     onSelectionChange?.(selectionModel);
-  };
+  }, [onSelectionChange]);
 
   return (
     <Box sx={{ width: '100%' }}>
@@ -70,6 +73,7 @@ export default function CommentsTable({ comments, loading = false, onSelectionCh
         onRowSelectionModelChange={handleSelectionChange}
         disableRowSelectionOnClick
         hideFooter
+        disableVirtualization={false}
         sx={{
           '& .MuiDataGrid-cell': {
             whiteSpace: 'normal',
@@ -94,6 +98,16 @@ export default function CommentsTable({ comments, loading = false, onSelectionCh
           // Also disable any checkbox ripple effects
           '& .MuiCheckbox-root .MuiTouchRipple-root': {
             display: 'none',
+          },
+          // Optimize row rendering performance
+          '& .MuiDataGrid-virtualScroller': {
+            // Enable hardware acceleration
+            transform: 'translateZ(0)',
+          },
+          // Reduce reflow on selection changes
+          '& .MuiDataGrid-row.Mui-selected': {
+            backgroundColor: 'rgba(25, 118, 210, 0.08) !important',
+            transition: 'none !important',
           },
         }}
       />
