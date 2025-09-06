@@ -2,8 +2,8 @@ import { useCallback, useState, useEffect } from 'react'
 import Navbar from './components/Navbar'
 import CommentsTable from './components/CommentsTable'
 import { saveAs } from 'file-saver'
-import { Container, Typography, Box, Button } from '@mui/material'
-import { CloudUpload as CloudUploadIcon } from '@mui/icons-material'
+import { Container, Typography, Box, Button, Fab } from '@mui/material'
+import { CloudUpload as CloudUploadIcon, KeyboardArrowUp as KeyboardArrowUpIcon } from '@mui/icons-material'
 
 import * as pdfjsLib from "pdfjs-dist";
 import "pdfjs-dist/build/pdf.worker.min.mjs";
@@ -36,6 +36,7 @@ function App() {
   const [error, setError] = useState<string>("");
   const [file, setFile] = useState<File | null>(null);
   const [isDragOverlay, setIsDragOverlay] = useState<boolean>(false);
+  const [showScrollTop, setShowScrollTop] = useState<boolean>(false);
 
   const downloadCSV = useCallback(() => {
     const header = ["page", "author", "modified", "text"];
@@ -206,6 +207,20 @@ function App() {
     };
   }, [handleFileSelect]);
 
+  // Scroll to top functionality
+  useEffect(() => {
+    const handleScroll = () => {
+      setShowScrollTop(window.scrollY > 300);
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: 'auto' });
+  };
+
   const handleClick = () => {
     const input = document.createElement('input');
     input.type = 'file';
@@ -310,6 +325,23 @@ function App() {
         
 
       </Container>
+
+      {/* Scroll to top button */}
+      {showScrollTop && (
+        <Fab
+          color="primary"
+          size="medium"
+          onClick={scrollToTop}
+          sx={{
+            position: 'fixed',
+            bottom: 24,
+            right: 24,
+            zIndex: 1000,
+          }}
+        >
+          <KeyboardArrowUpIcon />
+        </Fab>
+      )}
     </>
   )
 }

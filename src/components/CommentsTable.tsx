@@ -56,21 +56,14 @@ export default function CommentsTable({ comments, loading = false }: CommentsTab
   }));
 
   return (
-    <Box sx={{ height: 400, width: '100%' }}>
+    <Box sx={{ width: '100%' }}>
       <DataGrid
         rows={rowsWithId}
         columns={columns}
         loading={loading}
         getRowHeight={() => 'auto'}
-        initialState={{
-          pagination: {
-            paginationModel: {
-              pageSize: 10,
-            },
-          },
-        }}
-        pageSizeOptions={[10, 25, 100]}
         disableRowSelectionOnClick
+        hideFooter
         sx={{
           '& .MuiDataGrid-cell': {
             whiteSpace: 'normal',
