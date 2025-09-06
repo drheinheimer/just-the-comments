@@ -69,7 +69,7 @@ export default function CommentsTable({ comments, loading = false }: CommentsTab
             },
           },
         }}
-        pageSizeOptions={[5, 10, 25]}
+        pageSizeOptions={[10, 25, 100]}
         disableRowSelectionOnClick
         sx={{
           '& .MuiDataGrid-cell': {

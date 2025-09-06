@@ -226,14 +226,8 @@ function App() {
 
       {/* Main Content */}
       <Container maxWidth="md" sx={{ mt: 2 }}>
-        {/* <Typography variant="h4" component="h1" gutterBottom>
-          Welcome to Just the Comments
-        </Typography> */}
-        <Typography variant="body1">
-          Extract comments from your documents.
-        </Typography>
-        <Typography variant="body2" sx={{ mt: 1, fontWeight: 500 }}>
-          🔒 Your files stay in your browser—nothing is uploaded to any server.
+        <Typography variant="body1" sx={{ mt: 1, textAlign: 'center', fontWeight: 500 }}>
+          📝 Extract comments from your documents. 🔒 100% private.
         </Typography>
 
         {/* Upload Button */}
