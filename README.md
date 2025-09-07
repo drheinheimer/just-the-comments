@@ -23,6 +23,7 @@ This tool gives you a clean, organized view of all comments with the ability to 
 - 📋 **Multiple export formats** - CSV, TXT, and copy-to-clipboard (including Excel-compatible)
 - 🔄 **Row selection** - Export only specific comments you choose
 - 🎨 **Modern UI** - Clean, responsive interface built with Material UI
+- 💯 **Free** - 100% free. Forever.
 
 ## 🔒 Privacy & Security
 
