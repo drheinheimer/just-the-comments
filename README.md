@@ -31,7 +31,7 @@ This tool gives you a clean, organized view of all comments with the ability to 
 - ✅ **100% client-side processing** - Nothing leaves your browser
 - ✅ **No data collection** - We don't track, store, or analyze your documents
 - ✅ **No cookies** - No tracking cookies or session storage
-- ✅ **Open source** - Full transparency in how your data is handled
+- ✅ **Open source** - Full transparency in how your data is handled ([view source code](https://github.com/drheinheimer/just-the-comments))
 - ✅ **No analytics** - No tracking scripts or third-party data sharing
 
 Your PDFs are processed entirely within your browser using PDF.js, the same technology that powers Firefox's built-in PDF viewer.
