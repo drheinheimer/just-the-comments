@@ -22,7 +22,7 @@ This tool gives you a clean, organized view of all comments with the ability to 
 - 🎛️ **Column selection** - Choose which data to include in exports
 - 📋 **Multiple export formats** - CSV, TXT, and copy-to-clipboard (including Excel-compatible)
 - 🔄 **Row selection** - Export only specific comments you choose
-- 🎨 **Modern UI** - Clean, responsive interface built with Material-UI
+- 🎨 **Modern UI** - Clean, responsive interface built with Material UI
 
 ## 🔒 Privacy & Security
 
@@ -34,7 +34,7 @@ This tool gives you a clean, organized view of all comments with the ability to 
 - ✅ **Open source** - Full transparency in how your data is handled ([view source code](https://github.com/drheinheimer/just-the-comments))
 - ✅ **No analytics** - No tracking scripts or third-party data sharing
 
-Your PDFs are processed entirely within your browser using PDF.js, the same technology that powers Firefox's built-in PDF viewer.
+Your PDFs are processed entirely within your browser using [PDF.js](https://mozilla.github.io/pdf.js/), the same technology that powers Firefox's built-in PDF viewer.
 
 ## 🚀 How to Use
 
@@ -47,30 +47,36 @@ Your PDFs are processed entirely within your browser using PDF.js, the same tech
 ## 🛠️ Technical Details
 
 Built with modern web technologies:
-- **React 18** + **TypeScript** for type-safe UI components
-- **Material-UI (MUI)** for consistent, accessible design
-- **PDF.js** for client-side PDF processing
-- **Vite** for fast development and optimized builds
+- **[React 19](https://react.dev/versions#react-19)** + **[TypeScript](https://www.typescriptlang.org/)** for type-safe UI components
+- **[Material UI (MUI)](https://mui.com/)** for consistent, accessible design
+- **[PDF.js](https://mozilla.github.io/pdf.js/)** for client-side PDF processing
+- **[Vite](https://vite.dev/)** for fast development and optimized builds
 
 ## 🤖 AI Collaboration & Authorship
 
 This project represents a collaboration between human creativity and AI assistance--a relatively novel (starting ~2022) yet increasingly common mode of software development:
 
 - **Human authorship**: Concept, requirements, design decisions, and all code review/approval
-- **AI contribution**: ~99% of code generation via text prompts to Claude Sonnet 4 in Visual Studio Code, plus input on some design decisions based on known best practices
+- **AI contribution**: ~99% of code generation via text prompts to Claude Sonnet 4, plus input on some design decisions based on known best practices
 - **Development method**: Iterative prompt-driven development rather than manual coding
-- **Documentation**: This README was also AI-drafted and human-reviewed
+- **Documentation**: This README was also AI-drafted and human-refined
 
-**On authorship**: While the AI generated most of the code, we consider this **human-authored** software. The human(s) provided the vision, requirements, architectural decisions, and quality control. The AI served as an incredibly sophisticated tool—like an IDE that writes code instead of just highlighting it.
+**On authorship**: While the AI generated most of the code, we consider this **human-authored** software. The human(s) provided the vision, requirements, architectural decisions, and quality control. The AI served as a sophisticated tool, like an IDE that writes code instead of just highlighting it.
 
 This represents a new paradigm in software development where humans focus on *what* to build and *how* it should work, while AI handles much of the *implementation*. Every line of AI-generated code was reviewed, tested, and approved by human judgment.
 
 ## 🤝 Contributing
 
 Found a bug or have a feature request? Feel free to:
-- Open an issue on GitHub
+- [Open an issue on GitHub](https://github.com/drheinheimer/just-the-comments/issues)
 - Submit a pull request
 - Suggest improvements
+
+## 💭 Origin Story
+
+**Personal motivation**: This tool was born from the frustration of reviewing academic journals—making detailed notes in PDF comments, then spending precious time manually compiling those notes into a coherent review. I used to rely on SumNotes, but as it grew and became more expensive, I needed a simple, free alternative focused specifically on PDF comment extraction.
+
+**Commitment to free access**: Unlike commercial alternatives, this tool will always be 100% free. Future support for other document formats (Word, etc.) will maintain this commitment, though [donations welcome](https://ko-fi.com/davidrheinheimer) ☕ ;).
 
 ## 📝 License
 
