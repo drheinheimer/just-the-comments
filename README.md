@@ -28,7 +28,7 @@ This tool gives you a clean, organized view of all comments with the ability to 
 
 **Your privacy is our priority:**
 
-- ✅ **100% client-side processing** - PDFs never leave your browser
+- ✅ **100% client-side processing** - Nothing leaves your browser
 - ✅ **No data collection** - We don't track, store, or analyze your documents
 - ✅ **No server uploads** - Everything happens locally in your browser
 - ✅ **No cookies** - No tracking cookies or session storage
