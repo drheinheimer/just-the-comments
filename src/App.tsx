@@ -742,6 +742,54 @@ function App() {
           Copied to clipboard!
         </Alert>
       </Snackbar>
+
+      {/* Footer */}
+      <Box 
+        component="footer" 
+        sx={{ 
+          mt: 8, 
+          py: 3, 
+          px: 2, 
+          backgroundColor: 'grey.100',
+          borderTop: '1px solid',
+          borderColor: 'grey.300'
+        }}
+      >
+        <Container maxWidth="md">
+          <Box sx={{ textAlign: 'center' }}>
+            <Typography variant="body2" color="textSecondary">
+              Made with ❤️ by{' '}
+              <Box 
+                component="a" 
+                href="https://github.com/drheinheimer/just-the-comments" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                sx={{ 
+                  color: 'primary.main', 
+                  textDecoration: 'none',
+                  '&:hover': { textDecoration: 'underline' }
+                }}
+              >
+                Flow Direction Labs
+              </Box>
+              {' • '}
+              <Box 
+                component="a" 
+                href="https://github.com/drheinheimer/just-the-comments" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                sx={{ 
+                  color: 'primary.main', 
+                  textDecoration: 'none',
+                  '&:hover': { textDecoration: 'underline' }
+                }}
+              >
+                View Source
+              </Box>
+            </Typography>
+          </Box>
+        </Container>
+      </Box>
     </>
   )
 }
