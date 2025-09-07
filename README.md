@@ -40,8 +40,8 @@ Your PDFs are processed entirely within your browser using PDF.js, the same tech
 
 1. **Upload a PDF** - Drag & drop or click to select a PDF with comments
 2. **Review comments** - View extracted comments in an organized table
-3. **Sort & filter** - Sort by page, author, date, or comment content to organize results
-4. **Select columns** - Choose which information to include (Page, Author, Date, and/or Comment) - *Author and Date are hidden by default*
+3. **Sort & filter** - Sort by page, author, modified date, or comment content to organize results
+4. **Select columns** - Choose which information to include (Page, Author, Modified date, and/or Comment) - *Author and Modified date are hidden by default*
 5. **Export data** - Download as CSV/TXT or copy to clipboard for pasting into Excel
 
 ## 🛠️ Technical Details
