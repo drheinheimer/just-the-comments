@@ -3,7 +3,7 @@ import Navbar from './components/Navbar'
 import CommentsTable from './components/CommentsTable'
 import { saveAs } from 'file-saver'
 import { Container, Typography, Box, Button, Fab, Select, MenuItem, Checkbox, ListItemText, FormControl, InputLabel, OutlinedInput, Menu, Snackbar, Alert, ButtonGroup } from '@mui/material'
-import { CloudUpload as CloudUploadIcon, KeyboardArrowUp as KeyboardArrowUpIcon, ArrowDropDown as ArrowDropDownIcon, ContentCopy as ContentCopyIcon, Save as SaveIcon } from '@mui/icons-material'
+import { CloudUpload as CloudUploadIcon, KeyboardArrowUp as KeyboardArrowUpIcon, ArrowDropDown as ArrowDropDownIcon, ContentCopy as ContentCopyIcon, Save as SaveIcon, Clear as ClearIcon, Close as CloseIcon } from '@mui/icons-material'
 import type { GridRowSelectionModel } from '@mui/x-data-grid'
 
 import * as pdfjsLib from "pdfjs-dist";
@@ -371,6 +371,27 @@ function App() {
     }
   }, [comments, selectedRows, columnVisibility]);
 
+  const resetDocument = useCallback(() => {
+    setFile(null);
+    setFileName("");
+    setComments([]);
+    setError("");
+    setLoading(false);
+    setSelectedRows([]);
+    // Reset column visibility to defaults
+    setColumnVisibility(DEFAULT_COLUMNS);
+  }, []);
+
+  const unloadFile = useCallback(() => {
+    setFile(null);
+    setFileName("");
+    setComments([]);
+    setError("");
+    setLoading(false);
+    setSelectedRows([]);
+    // Keep column visibility settings intact
+  }, []);
+
   const handleFileSelect = useCallback(async (file: File | null) => {
     if (!file) return;
     
@@ -551,105 +572,138 @@ function App() {
       {/* Main Content */}
       <Container maxWidth="md" sx={{ mt: 2 }}>
         <Typography variant="body1" sx={{ mt: 1, textAlign: 'center', fontWeight: 500 }}>
-          📝 Extract comments from your documents. 🔒 100% private.
+          📝 Extract comments from your PDF documents. 🔒 100% private.
         </Typography>
 
-        {/* Upload Button */}
-        <Box sx={{ mt: 3, textAlign: 'center' }}>
-          <Button
-            variant={comments.length > 0 ? "outlined" : "contained"}
-            size="large"
-            startIcon={<CloudUploadIcon />}
-            onClick={handleClick}
-            sx={{ px: 4, py: 1.5 }}
-          >
-            {file ? `Selected: ${file.name}` : 'Upload PDF Document'}
-          </Button>
-          <Typography variant="body2" color="textSecondary" sx={{ mt: 1 }}>
-            Or drag and drop anywhere on this page
-          </Typography>
-        </Box>
-
-        {/* Full-screen drag overlay */}
-        {isDragOverlay && (
-          <Box
-            sx={{
-              position: 'fixed',
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              backgroundColor: 'rgba(25, 118, 210, 0.1)',
-              backdropFilter: 'blur(4px)',
-              zIndex: 9999,
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              justifyContent: 'center',
-              border: '4px dashed #1976d2',
-              boxSizing: 'border-box',
-            }}
-          >
-            <CloudUploadIcon sx={{ fontSize: 80, color: '#1976d2', mb: 2 }} />
-            <Typography variant="h4" color="primary" sx={{ fontWeight: 600 }}>
-              Drop your PDF here
-            </Typography>
-            <Typography variant="body1" color="textSecondary" sx={{ mt: 1 }}>
-              Release to upload and extract comments
+        {loading ? (
+          /* Loading State - replaces everything below */
+          <Box sx={{ mt: 6, textAlign: 'center' }}>
+            <Typography variant="body1" color="textSecondary">
+              Extracting comments from {file?.name}
             </Typography>
           </Box>
-        )}
+        ) : (
+          <>
+            {/* Upload Button */}
+            <Box sx={{ mt: 3, textAlign: 'center' }}>
+              <Button
+                variant={comments.length > 0 ? "outlined" : "contained"}
+                size="large"
+                startIcon={<CloudUploadIcon />}
+                onClick={handleClick}
+                sx={{ px: 4, py: 1.5 }}
+              >
+                Upload PDF Document
+              </Button>
+              
+              {/* Show filename and unload button when file is loaded */}
+              {file ? (
+                <Box sx={{ mt: 2, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1 }}>
+                  <Typography variant="body1" color="textPrimary">
+                    Selected: {file.name}
+                  </Typography>
+                  <Button
+                    variant="outlined"
+                    size="small"
+                    startIcon={<CloseIcon />}
+                    onClick={unloadFile}
+                    sx={{ px: 1.5, py: 0.5 }}
+                    color="error"
+                  >
+                    Unload
+                  </Button>
+                </Box>
+              ) : (
+                <Typography variant="body2" color="textSecondary" sx={{ mt: 1 }}>
+                  Or drag and drop anywhere on this page
+                </Typography>
+              )}
+            </Box>
 
-        {/* Results Section */}
-        {loading && (
-          <Box sx={{ mt: 3, textAlign: 'center' }}>
-            <Typography>Processing PDF...</Typography>
-          </Box>
-        )}
+            {/* Error Display */}
+            {error && (
+              <Box sx={{ mt: 3, p: 2, bgcolor: 'error.light', borderRadius: 1 }}>
+                <Typography color="error">{error}</Typography>
+              </Box>
+            )}
 
-        {error && (
-          <Box sx={{ mt: 3, p: 2, bgcolor: 'error.light', borderRadius: 1 }}>
-            <Typography color="error">{error}</Typography>
-          </Box>
-        )}
-
-        {comments.length > 0 && !loading && (
-          <Box sx={{ mt: 3 }}>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-              <Typography variant="h6">
-                Found {comments.length} comment{comments.length !== 1 ? 's' : ''}
-                {selectedRows.length > 0 
-                    ? ` (${selectedRows.length} selected)`
-                    : ''
-                  }
-              </Typography>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                <ColumnSelector
+            {/* Results Section */}
+            {comments.length > 0 && (
+              <Box sx={{ mt: 3 }}>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+                  <Typography variant="h6">
+                    Found {comments.length} comment{comments.length !== 1 ? 's' : ''}
+                    {selectedRows.length > 0 
+                        ? ` (${selectedRows.length} selected)`
+                        : ''
+                      }
+                  </Typography>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                    <ColumnSelector
+                      columnVisibility={columnVisibility}
+                      setColumnVisibility={setColumnVisibility}
+                    />
+                    <ButtonGroup variant="outlined">
+                    <CopyButton
+                      onCopyText={copyToClipboard}
+                      onCopyCSV={copyCSVToClipboard}
+                      disabled={Object.values(columnVisibility).every(visible => !visible)}
+                    />
+                    <SaveButton
+                      onSaveCSV={saveCSV}
+                      onSaveTXT={saveTXT}
+                      disabled={Object.values(columnVisibility).every(visible => !visible)}
+                    />
+                    <Button
+                      startIcon={<ClearIcon />}
+                      onClick={resetDocument}
+                      disabled={!file && comments.length === 0}
+                    >
+                      Reset
+                    </Button>
+                    </ButtonGroup>
+                  </Box>
+                </Box>
+                <CommentsTable 
+                  comments={comments} 
+                  loading={loading}
+                  onSelectionChange={handleSelectionChange}
                   columnVisibility={columnVisibility}
                   setColumnVisibility={setColumnVisibility}
                 />
-                <ButtonGroup variant="outlined">
-                <CopyButton
-                  onCopyText={copyToClipboard}
-                  onCopyCSV={copyCSVToClipboard}
-                  disabled={Object.values(columnVisibility).every(visible => !visible)}
-                />
-                <SaveButton
-                  onSaveCSV={saveCSV}
-                  onSaveTXT={saveTXT}
-                  disabled={Object.values(columnVisibility).every(visible => !visible)}
-                />
-                </ButtonGroup>
               </Box>
-            </Box>
-            <CommentsTable 
-              comments={comments} 
-              loading={loading}
-              onSelectionChange={handleSelectionChange}
-              columnVisibility={columnVisibility}
-              setColumnVisibility={setColumnVisibility}
-            />
-          </Box>
+            )}
+
+            {/* Full-screen drag overlay */}
+            {isDragOverlay && (
+              <Box
+                sx={{
+                  position: 'fixed',
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  backgroundColor: 'rgba(25, 118, 210, 0.1)',
+                  backdropFilter: 'blur(4px)',
+                  zIndex: 9999,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  border: '4px dashed #1976d2',
+                  boxSizing: 'border-box',
+                }}
+              >
+                <CloudUploadIcon sx={{ fontSize: 80, color: '#1976d2', mb: 2 }} />
+                <Typography variant="h4" color="primary" sx={{ fontWeight: 600 }}>
+                  Drop your PDF here
+                </Typography>
+                <Typography variant="body1" color="textSecondary" sx={{ mt: 1 }}>
+                  Release to upload and extract comments
+                </Typography>
+              </Box>
+            )}
+          </>
         )}
 
       </Container>
