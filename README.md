@@ -58,7 +58,7 @@ Built with modern web technologies:
 This project represents a collaboration between human creativity and AI assistance--a relatively novel (starting ~2022) yet increasingly common mode of software development:
 
 - **Human authorship**: Concept, requirements, design decisions, and all code review/approval
-- **AI contribution**: ~99% of code generation via text prompts to Claude Sonnet 3.5
+- **AI contribution**: ~99% of code generation via text prompts to Claude Sonnet 4 in Visual Studio Code, plus input on some design decisions based on known best practices
 - **Development method**: Iterative prompt-driven development rather than manual coding
 - **Documentation**: This README was also AI-drafted and human-reviewed
 
