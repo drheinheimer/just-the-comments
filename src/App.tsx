@@ -221,8 +221,9 @@ function App() {
   }, [comments.length]);
 
   const saveCSV = useCallback(() => {
-    // Only include visible columns
-    const selectedFields = Object.keys(columnVisibility).filter((col) => columnVisibility[col]);
+    // Only include visible columns, excluding UI-only columns
+    const selectedFields = Object.keys(columnVisibility)
+      .filter((col) => columnVisibility[col] && col !== '__check__');
     if (selectedFields.length === 0) return;
     
     // Filter comments to only include selected rows
@@ -260,8 +261,9 @@ function App() {
 
   // Shared function to format text content (DRY principle)
   const formatTextContent = useCallback(() => {
-    // Only include visible columns
-    const selectedFields = Object.keys(columnVisibility).filter((col) => columnVisibility[col]);
+    // Only include visible columns, excluding UI-only columns
+    const selectedFields = Object.keys(columnVisibility)
+      .filter((col) => columnVisibility[col] && col !== '__check__');
     if (selectedFields.length === 0) return "";
     
     // Filter comments to only include selected rows
@@ -332,8 +334,9 @@ function App() {
   }, [formatTextContent]);
 
   const copyCSVToClipboard = useCallback(async () => {
-    // Only include visible columns
-    const selectedFields = Object.keys(columnVisibility).filter((col) => columnVisibility[col]);
+    // Only include visible columns, excluding UI-only columns
+    const selectedFields = Object.keys(columnVisibility)
+      .filter((col) => columnVisibility[col] && col !== '__check__');
     if (selectedFields.length === 0) return;
     
     // Filter comments to only include selected rows
@@ -341,19 +344,28 @@ function App() {
       ? selectedRows.map(index => comments[index]).filter(Boolean)
       : comments; // If none selected, export all
       
-    // Use tab-separated values for proper Excel pasting
+    // Helper function to properly escape TSV fields with newlines
+    const escapeTSVField = (value: string) => {
+      if (!value) return '""'; // Empty quoted field
+      // Always quote fields, and preserve actual newlines for Excel
+      return `"${value.replace(/"/g, '""')}"`;
+    };
+      
+    // Create TSV with proper newline handling
+    const header = selectedFields.map(field => escapeTSVField(field)).join("\t");
     const rows = selectedComments.map((c) =>
       selectedFields
-        .map((field) => (c as any)[field]?.toString() || "")
+        .map((field) => escapeTSVField((c as any)[field]?.toString() || ""))
         .join("\t")
     );
-    const tsv = [selectedFields.join("\t"), ...rows].join("\n");
+    const tsv = [header, ...rows].join("\n");
     
     try {
+      // Use simple TSV approach with proper quoting for multi-line content
       await navigator.clipboard.writeText(tsv);
       setCopySuccess(true);
     } catch (err) {
-      console.error('Failed to copy TSV to clipboard:', err);
+      console.error('Failed to copy to clipboard:', err);
       // For unsupported browsers, show the text in an alert as fallback
       alert('Your browser doesn\'t support clipboard access. Here\'s the data to copy manually:\n\n' + tsv);
     }
