@@ -2,7 +2,7 @@ import { useCallback, useState, useEffect } from 'react'
 import Navbar from './components/Navbar'
 import CommentsTable from './components/CommentsTable'
 import { saveAs } from 'file-saver'
-import { Container, Typography, Box, Button, Fab } from '@mui/material'
+import { Container, Typography, Box, Button, Fab, Select, MenuItem, Checkbox, ListItemText, FormControl, InputLabel, OutlinedInput } from '@mui/material'
 import { CloudUpload as CloudUploadIcon, KeyboardArrowUp as KeyboardArrowUpIcon } from '@mui/icons-material'
 import type { GridRowSelectionModel } from '@mui/x-data-grid'
 
@@ -10,10 +10,10 @@ import * as pdfjsLib from "pdfjs-dist";
 import "pdfjs-dist/build/pdf.worker.min.mjs";
 
 interface CommentEntry {
-  page: number;
-  author: string;
-  text: string;
-  modified: string;
+  Page: number;
+  Author: string;
+  Comment: string;
+  Modified: string;
 }
 
 function formatDate(ts?: string): string {
@@ -29,6 +29,68 @@ function formatDate(ts?: string): string {
   return new Date(ts).toISOString();
 }
 
+const COLUMN_FIELDS = ['Page', 'Author', 'Modified', 'Comment'];
+
+// Column selector component
+function ColumnSelector({ columnVisibility, setColumnVisibility }: { 
+  columnVisibility: { [key: string]: boolean }, 
+  setColumnVisibility: (vis: { [key: string]: boolean }) => void 
+}) {
+  const selectedColumns = Object.keys(columnVisibility).filter(key => columnVisibility[key]);
+
+  const handleChange = (event: any) => {
+    const value = event.target.value;
+    const newVisibility = { ...columnVisibility };
+    
+    // Reset all to false
+    Object.keys(newVisibility).forEach(key => {
+      newVisibility[key] = false;
+    });
+    
+    // Set selected ones to true
+    value.forEach((field: string) => {
+      newVisibility[field] = true;
+    });
+    
+    // Always ensure "Comment" column is selected
+    newVisibility.Comment = true;
+    
+    setColumnVisibility(newVisibility);
+  };
+
+  return (
+    <FormControl size="small" sx={{ minWidth: 160 }}>
+      <InputLabel>Select columns</InputLabel>
+      <Select
+        multiple
+        autoWidth
+        value={selectedColumns}
+        onChange={handleChange}
+        input={<OutlinedInput label="Select columns" />}
+        renderValue={(selected) => `${selected.length} selected`}
+      >
+        {COLUMN_FIELDS.map((field) => (
+          <MenuItem key={field} value={field} disabled={field === 'Comment'}>
+            <Checkbox 
+              checked={selectedColumns.indexOf(field) > -1} 
+              disabled={field === 'Comment'}
+            />
+            <ListItemText primary={field} />
+          </MenuItem>
+        ))}
+      </Select>
+    </FormControl>
+  );
+}
+
+const DEFAULT_COLUMNS = {
+  Page: true,
+  Author: false,
+  Modified: false,
+  Comment: true,
+  __check__: true, // Ensure checkbox column is always visible
+};
+
 function App() {
 
   const [fileName, setFileName] = useState<string>("");
@@ -39,6 +101,7 @@ function App() {
   const [isDragOverlay, setIsDragOverlay] = useState<boolean>(false);
   const [showScrollTop, setShowScrollTop] = useState<boolean>(false);
   const [selectedRows, setSelectedRows] = useState<number[]>([]);
+  const [columnVisibility, setColumnVisibility] = useState<{ [key: string]: boolean }>(DEFAULT_COLUMNS);
 
   const handleSelectionChange = useCallback((selectionModel: GridRowSelectionModel) => {
     if (selectionModel.type === 'include') {
@@ -59,7 +122,9 @@ function App() {
   }, [comments.length]);
 
   const downloadCSV = useCallback(() => {
-    const header = ["page", "author", "modified", "text"];
+    // Only include visible columns
+    const selectedFields = Object.keys(columnVisibility).filter((col) => columnVisibility[col]);
+    if (selectedFields.length === 0) return;
     
     // Filter comments to only include selected rows
     const selectedComments = selectedRows.length > 0 
@@ -67,18 +132,18 @@ function App() {
       : comments; // If none selected, export all
       
     const rows = selectedComments.map((c) =>
-      header
-        .map((h) => `"${(c as any)[h]?.toString().replace(/"/g, '""') || ""}"`)
+      selectedFields
+        .map((field) => `"${(c as any)[field]?.toString().replace(/"/g, '""') || ""}"`)
         .join(",")
     );
-    const csv = [header.join(","), ...rows].join("\n");
+    const csv = [selectedFields.join(","), ...rows].join("\n");
     const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
     
     // Remove file extension from filename and add _comments suffix
     const baseFileName = fileName ? fileName.replace(/\.[^/.]+$/, '') : "file";
     const filename = `${baseFileName}_comments.csv`;
     saveAs(blob, filename);
-  }, [comments, fileName, selectedRows]);
+  }, [comments, fileName, selectedRows, columnVisibility]);
 
   const handleFileSelect = useCallback(async (file: File | null) => {
     if (!file) return;
@@ -164,10 +229,10 @@ function App() {
           
           if (contents && contents.trim()) {
             found.push({
-              page: pageNum,
-              author,
-              text: contents.trim(),
-              modified: formatDate(mod),
+              Page: pageNum,
+              Author: author,
+              Comment: contents.trim(),
+              Modified: formatDate(mod),
             });
           }
         }
@@ -340,20 +405,29 @@ function App() {
               <Typography variant="h6">
                 Found {comments.length} comment{comments.length !== 1 ? 's' : ''}
               </Typography>
-              <Button 
-                variant="contained" 
-                onClick={downloadCSV}
-              >
-                {selectedRows.length > 0 
-                  ? `Download CSV (${selectedRows.length} selected)`
-                  : 'Download CSV'
-                }
-              </Button>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                <ColumnSelector
+                  columnVisibility={columnVisibility}
+                  setColumnVisibility={setColumnVisibility}
+                />
+                <Button 
+                  variant="contained" 
+                  onClick={downloadCSV}
+                  disabled={Object.values(columnVisibility).every(visible => !visible)}
+                >
+                  {selectedRows.length > 0 
+                    ? `Download CSV (${selectedRows.length} selected)`
+                    : 'Download CSV'
+                  }
+                </Button>
+              </Box>
             </Box>
             <CommentsTable 
               comments={comments} 
               loading={loading}
               onSelectionChange={handleSelectionChange}
+              columnVisibility={columnVisibility}
+              setColumnVisibility={setColumnVisibility}
             />
           </Box>
         )}

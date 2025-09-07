@@ -1,42 +1,41 @@
 import Box from '@mui/material/Box';
 import { DataGrid, type GridColDef, type GridRowSelectionModel } from '@mui/x-data-grid';
-import { useMemo, useCallback } from 'react';
+import { useMemo, useCallback, useEffect } from 'react';
 
 interface CommentEntry {
-  page: number;
-  author: string;
-  text: string;
-  modified: string;
+  Page: number;
+  Author: string;
+  Comment: string;
+  Modified: string;
 }
 
 interface CommentsTableProps {
   comments: CommentEntry[];
   loading?: boolean;
   onSelectionChange?: (selectionModel: GridRowSelectionModel) => void;
+  columnVisibility: { [key: string]: boolean };
+  setColumnVisibility: (vis: { [key: string]: boolean }) => void;
 }
 
 const columns: GridColDef<CommentEntry>[] = [
   { 
-    field: 'page', 
-    headerName: 'Page', 
+    field: 'Page', 
     width: 90,
     type: 'number'
   },
   {
-    field: 'author',
-    headerName: 'Author',
+    field: 'Author',
     width: 150,
   },
   {
-    field: 'modified',
-    headerName: 'Modified',
+    field: 'Modified',
     width: 180,
   },
   {
-    field: 'text',
-    headerName: 'Comment',
+    field: 'Comment',
     flex: 1,
     minWidth: 300,
+    hideable: false, // Prevent hiding the Comment column
     renderCell: (params) => (
       <Box sx={{ 
         whiteSpace: 'normal', 
@@ -49,7 +48,23 @@ const columns: GridColDef<CommentEntry>[] = [
   },
 ];
 
-export default function CommentsTable({ comments, loading = false, onSelectionChange }: CommentsTableProps) {
+export default function CommentsTable({ comments, loading = false, onSelectionChange, columnVisibility, setColumnVisibility }: CommentsTableProps) {
+  // Inject global CSS to hide checkbox selection in column management
+  useEffect(() => {
+    const style = document.createElement('style');
+    style.textContent = `
+      .MuiDataGrid-columnsManagement .MuiDataGrid-columnsManagementRow:first-child,
+      .MuiDataGrid-columnsManagement > :first-child {
+        display: none !important;
+      }
+    `;
+    document.head.appendChild(style);
+    
+    return () => {
+      document.head.removeChild(style);
+    };
+  }, []);
+
   // Memoize row data to prevent unnecessary re-computation
   const rowsWithId = useMemo(() => 
     comments.map((comment, index) => ({
@@ -62,6 +77,17 @@ export default function CommentsTable({ comments, loading = false, onSelectionCh
     onSelectionChange?.(selectionModel);
   }, [onSelectionChange]);
 
+  // Handle column visibility changes from DataGrid's native controls
+  const handleColumnVisibilityChange = useCallback((model: any) => {
+    // Ensure Comment column and checkbox column are always visible
+    const updatedModel = { 
+      ...model, 
+      Comment: true,
+      __check__: true // This is the internal field name for the checkbox column
+    };
+    setColumnVisibility(updatedModel);
+  }, [setColumnVisibility]);
+
   return (
     <Box sx={{ width: '100%' }}>
       <DataGrid
@@ -71,9 +97,11 @@ export default function CommentsTable({ comments, loading = false, onSelectionCh
         getRowHeight={() => 'auto'}
         checkboxSelection
         onRowSelectionModelChange={handleSelectionChange}
+        onColumnVisibilityModelChange={handleColumnVisibilityChange}
         disableRowSelectionOnClick
         hideFooter
         disableVirtualization={false}
+        columnVisibilityModel={columnVisibility}
         sx={{
           '& .MuiDataGrid-cell': {
             whiteSpace: 'normal',
