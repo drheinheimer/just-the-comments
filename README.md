@@ -1,6 +1,6 @@
 # Just the Comments 💬
 
-A simple, privacy-focused web tool to extract and export comments from PDF documents.
+A simple web tool to extract and export comments from PDF documents. 100% private: no files or data leave the browser.
 
 ## 🎯 Purpose & Motivation
 

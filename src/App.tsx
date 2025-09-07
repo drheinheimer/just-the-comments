@@ -572,7 +572,20 @@ function App() {
       {/* Main Content */}
       <Container maxWidth="md" sx={{ mt: 2 }}>
         <Typography variant="body1" sx={{ mt: 1, textAlign: 'center', fontWeight: 500 }}>
-          📝 Extract comments from your PDF documents. 🔒 100% private.
+          📝 Extract comments from your PDF documents. 🔒 100% private.{' '}
+          <Box 
+            component="a" 
+            href="https://github.com/drheinheimer/just-the-comments#readme" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            sx={{ 
+              color: 'primary.main', 
+              textDecoration: 'none',
+              '&:hover': { textDecoration: 'underline' }
+            }}
+          >
+            Read more.
+          </Box>
         </Typography>
 
         {loading ? (
