@@ -2,8 +2,8 @@ import { useCallback, useState, useEffect } from 'react'
 import Navbar from './components/Navbar'
 import CommentsTable from './components/CommentsTable'
 import { saveAs } from 'file-saver'
-import { Container, Typography, Box, Button, Fab, Select, MenuItem, Checkbox, ListItemText, FormControl, InputLabel, OutlinedInput } from '@mui/material'
-import { CloudUpload as CloudUploadIcon, KeyboardArrowUp as KeyboardArrowUpIcon } from '@mui/icons-material'
+import { Container, Typography, Box, Button, Fab, Select, MenuItem, Checkbox, ListItemText, FormControl, InputLabel, OutlinedInput, Menu, Snackbar, Alert, ButtonGroup } from '@mui/material'
+import { CloudUpload as CloudUploadIcon, KeyboardArrowUp as KeyboardArrowUpIcon, ArrowDropDown as ArrowDropDownIcon, ContentCopy as ContentCopyIcon, Save as SaveIcon } from '@mui/icons-material'
 import type { GridRowSelectionModel } from '@mui/x-data-grid'
 
 import * as pdfjsLib from "pdfjs-dist";
@@ -27,6 +27,104 @@ function formatDate(ts?: string): string {
     return date.toISOString().replace("T", " ").replace(".000Z", "Z");
   }
   return new Date(ts).toISOString();
+}
+
+// Copy button component with format options
+function CopyButton({ onCopyText, onCopyCSV, disabled }: {
+  onCopyText: () => void,
+  onCopyCSV: () => void,
+  disabled: boolean
+}) {
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const open = Boolean(anchorEl);
+  
+  const handleClick = (event: React.MouseEvent<HTMLElement>) => {
+    setAnchorEl(event.currentTarget);
+  };
+  
+  const handleClose = () => {
+    setAnchorEl(null);
+  };
+  
+  const handleCopyText = () => {
+    onCopyText();
+    handleClose();
+  };
+  
+  const handleCopyCSV = () => {
+    onCopyCSV();
+    handleClose();
+  };
+
+  return (
+    <>
+      <Button
+        startIcon={<ContentCopyIcon />}
+        endIcon={<ArrowDropDownIcon />}
+        onClick={handleClick}
+        disabled={disabled}
+      >
+        Copy
+      </Button>
+      <Menu anchorEl={anchorEl} open={open} onClose={handleClose}>
+        <MenuItem onClick={handleCopyText}>
+          Copy as text
+        </MenuItem>
+        <MenuItem onClick={handleCopyCSV}>
+          Copy as table
+        </MenuItem>
+      </Menu>
+    </>
+  );
+}
+
+// Save button component with format options
+function SaveButton({ onSaveCSV, onSaveTXT, disabled }: {
+  onSaveCSV: () => void,
+  onSaveTXT: () => void,
+  disabled: boolean
+}) {
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const open = Boolean(anchorEl);
+  
+  const handleClick = (event: React.MouseEvent<HTMLElement>) => {
+    setAnchorEl(event.currentTarget);
+  };
+  
+  const handleClose = () => {
+    setAnchorEl(null);
+  };
+  
+  const handleSaveCSV = () => {
+    onSaveCSV();
+    handleClose();
+  };
+  
+  const handleSaveTXT = () => {
+    onSaveTXT();
+    handleClose();
+  };
+
+  return (
+    <>
+      <Button
+        startIcon={<SaveIcon />}
+        endIcon={<ArrowDropDownIcon />}
+        onClick={handleClick}
+        disabled={disabled}
+      >
+        Save
+      </Button>
+      <Menu anchorEl={anchorEl} open={open} onClose={handleClose}>
+        <MenuItem onClick={handleSaveTXT}>
+          Save as text file
+        </MenuItem>
+        <MenuItem onClick={handleSaveCSV}>
+          Save as CSV file
+        </MenuItem>
+      </Menu>
+    </>
+  );
 }
 
 const COLUMN_FIELDS = ['Page', 'Author', 'Modified', 'Comment'];
@@ -67,7 +165,7 @@ function ColumnSelector({ columnVisibility, setColumnVisibility }: {
         value={selectedColumns}
         onChange={handleChange}
         input={<OutlinedInput label="Select columns" />}
-        renderValue={(selected) => `${selected.length} selected`}
+        renderValue={(selected) => `${selected.length - 1} selected`}
       >
         {COLUMN_FIELDS.map((field) => (
           <MenuItem key={field} value={field} disabled={field === 'Comment'}>
@@ -102,6 +200,7 @@ function App() {
   const [showScrollTop, setShowScrollTop] = useState<boolean>(false);
   const [selectedRows, setSelectedRows] = useState<number[]>([]);
   const [columnVisibility, setColumnVisibility] = useState<{ [key: string]: boolean }>(DEFAULT_COLUMNS);
+  const [copySuccess, setCopySuccess] = useState<boolean>(false);
 
   const handleSelectionChange = useCallback((selectionModel: GridRowSelectionModel) => {
     if (selectionModel.type === 'include') {
@@ -121,7 +220,7 @@ function App() {
     }
   }, [comments.length]);
 
-  const downloadCSV = useCallback(() => {
+  const saveCSV = useCallback(() => {
     // Only include visible columns
     const selectedFields = Object.keys(columnVisibility).filter((col) => columnVisibility[col]);
     if (selectedFields.length === 0) return;
@@ -131,9 +230,23 @@ function App() {
       ? selectedRows.map(index => comments[index]).filter(Boolean)
       : comments; // If none selected, export all
       
+    // Helper function to escape CSV field only when necessary
+    const escapeCSVField = (value: string, fieldName: string) => {
+      if (!value) return '';
+      // Always quote comments since they're free-form text
+      if (fieldName === 'Comment') {
+        return `"${value.replace(/"/g, '""')}"`;
+      }
+      // Only quote other fields if they contain comma, quote, or newline
+      if (value.includes(',') || value.includes('"') || value.includes('\n') || value.includes('\r')) {
+        return `"${value.replace(/"/g, '""')}"`;
+      }
+      return value;
+    };
+      
     const rows = selectedComments.map((c) =>
       selectedFields
-        .map((field) => `"${(c as any)[field]?.toString().replace(/"/g, '""') || ""}"`)
+        .map((field) => escapeCSVField((c as any)[field]?.toString() || "", field))
         .join(",")
     );
     const csv = [selectedFields.join(","), ...rows].join("\n");
@@ -144,6 +257,107 @@ function App() {
     const filename = `${baseFileName}_comments.csv`;
     saveAs(blob, filename);
   }, [comments, fileName, selectedRows, columnVisibility]);
+
+  // Shared function to format text content (DRY principle)
+  const formatTextContent = useCallback(() => {
+    // Only include visible columns
+    const selectedFields = Object.keys(columnVisibility).filter((col) => columnVisibility[col]);
+    if (selectedFields.length === 0) return "";
+    
+    // Filter comments to only include selected rows
+    const selectedComments = selectedRows.length > 0 
+      ? selectedRows.map(index => comments[index]).filter(Boolean)
+      : comments; // If none selected, export all
+    
+    const lines = selectedComments.map((c) => {
+      const parts = [];
+      
+      // Add page if selected
+      if (selectedFields.includes('Page')) {
+        parts.push(`P${c.Page}`);
+      }
+      
+      // Add author if selected
+      if (selectedFields.includes('Author') && c.Author) {
+        parts.push(c.Author);
+      }
+      
+      // Add modified if selected
+      if (selectedFields.includes('Modified') && c.Modified) {
+        parts.push(c.Modified);
+      }
+      
+      // Format the prefix (everything before the comment)
+      const prefix = parts.length > 0 ? parts.join(', ') : '';
+      
+      // Add comment with appropriate formatting
+      if (selectedFields.includes('Comment')) {
+        if (prefix) {
+          return `${prefix} - ${c.Comment}`;
+        } else {
+          return c.Comment;
+        }
+      } else {
+        return prefix;
+      }
+    });
+    
+    return lines.join('\n\n');
+  }, [comments, selectedRows, columnVisibility]);
+
+  const saveTXT = useCallback(() => {
+    const text = formatTextContent();
+    if (!text) return;
+    
+    const blob = new Blob([text], { type: "text/plain;charset=utf-8" });
+    
+    // Remove file extension from filename and add _comments suffix
+    const baseFileName = fileName ? fileName.replace(/\.[^/.]+$/, '') : "file";
+    const filename = `${baseFileName}_comments.txt`;
+    saveAs(blob, filename);
+  }, [formatTextContent, fileName]);
+
+  const copyToClipboard = useCallback(async () => {
+    const text = formatTextContent();
+    if (!text) return;
+    
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopySuccess(true);
+    } catch (err) {
+      console.error('Failed to copy to clipboard:', err);
+      // For unsupported browsers, show the text in an alert as fallback
+      alert('Your browser doesn\'t support clipboard access. Here\'s the text to copy manually:\n\n' + text);
+    }
+  }, [formatTextContent]);
+
+  const copyCSVToClipboard = useCallback(async () => {
+    // Only include visible columns
+    const selectedFields = Object.keys(columnVisibility).filter((col) => columnVisibility[col]);
+    if (selectedFields.length === 0) return;
+    
+    // Filter comments to only include selected rows
+    const selectedComments = selectedRows.length > 0 
+      ? selectedRows.map(index => comments[index]).filter(Boolean)
+      : comments; // If none selected, export all
+      
+    // Use tab-separated values for proper Excel pasting
+    const rows = selectedComments.map((c) =>
+      selectedFields
+        .map((field) => (c as any)[field]?.toString() || "")
+        .join("\t")
+    );
+    const tsv = [selectedFields.join("\t"), ...rows].join("\n");
+    
+    try {
+      await navigator.clipboard.writeText(tsv);
+      setCopySuccess(true);
+    } catch (err) {
+      console.error('Failed to copy TSV to clipboard:', err);
+      // For unsupported browsers, show the text in an alert as fallback
+      alert('Your browser doesn\'t support clipboard access. Here\'s the data to copy manually:\n\n' + tsv);
+    }
+  }, [comments, selectedRows, columnVisibility]);
 
   const handleFileSelect = useCallback(async (file: File | null) => {
     if (!file) return;
@@ -214,18 +428,6 @@ function App() {
           
           const mod = a.modificationDate || a.modDate || a.modified || "";
           
-          // Debug: log annotation properties to see what's available
-          if (contents && contents.trim()) {
-            console.log('Annotation properties:', Object.keys(a));
-            console.log('Author candidates:', {
-              title: a.title,
-              user: a.user, 
-              author: a.author,
-              titleObj: a.titleObj,
-              T: a.T,
-              userName: a.userName
-            });
-          }
           
           if (contents && contents.trim()) {
             found.push({
@@ -343,7 +545,7 @@ function App() {
         {/* Upload Button */}
         <Box sx={{ mt: 3, textAlign: 'center' }}>
           <Button
-            variant="contained"
+            variant={comments.length > 0 ? "outlined" : "contained"}
             size="large"
             startIcon={<CloudUploadIcon />}
             onClick={handleClick}
@@ -404,22 +606,28 @@ function App() {
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
               <Typography variant="h6">
                 Found {comments.length} comment{comments.length !== 1 ? 's' : ''}
+                {selectedRows.length > 0 
+                    ? ` (${selectedRows.length} selected)`
+                    : ''
+                  }
               </Typography>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                 <ColumnSelector
                   columnVisibility={columnVisibility}
                   setColumnVisibility={setColumnVisibility}
                 />
-                <Button 
-                  variant="contained" 
-                  onClick={downloadCSV}
+                <ButtonGroup variant="outlined">
+                <CopyButton
+                  onCopyText={copyToClipboard}
+                  onCopyCSV={copyCSVToClipboard}
                   disabled={Object.values(columnVisibility).every(visible => !visible)}
-                >
-                  {selectedRows.length > 0 
-                    ? `Download CSV (${selectedRows.length} selected)`
-                    : 'Download CSV'
-                  }
-                </Button>
+                />
+                <SaveButton
+                  onSaveCSV={saveCSV}
+                  onSaveTXT={saveTXT}
+                  disabled={Object.values(columnVisibility).every(visible => !visible)}
+                />
+                </ButtonGroup>
               </Box>
             </Box>
             <CommentsTable 
@@ -431,8 +639,6 @@ function App() {
             />
           </Box>
         )}
-
-        
 
       </Container>
 
@@ -452,6 +658,24 @@ function App() {
           <KeyboardArrowUpIcon />
         </Fab>
       )}
+
+      {/* Copy success toast */}
+      <Snackbar
+        open={copySuccess}
+        autoHideDuration={3000}
+        onClose={() => setCopySuccess(false)}
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+        sx={{ mt: 8 }} // Add margin-top to clear the navbar
+      >
+        <Alert 
+          onClose={() => setCopySuccess(false)} 
+          severity="success"
+          variant='filled'
+          sx={{ width: '100%' }}
+        >
+          Copied to clipboard!
+        </Alert>
+      </Snackbar>
     </>
   )
 }
