@@ -30,7 +30,6 @@ This tool gives you a clean, organized view of all comments with the ability to 
 
 - ✅ **100% client-side processing** - Nothing leaves your browser
 - ✅ **No data collection** - We don't track, store, or analyze your documents
-- ✅ **No server uploads** - Everything happens locally in your browser
 - ✅ **No cookies** - No tracking cookies or session storage
 - ✅ **Open source** - Full transparency in how your data is handled
 - ✅ **No analytics** - No tracking scripts or third-party data sharing
