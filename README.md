@@ -53,7 +53,7 @@ Built with modern web technologies:
 - **PDF.js** for client-side PDF processing
 - **Vite** for fast development and optimized builds
 
-## � AI Collaboration & Authorship
+## 🤖 AI Collaboration & Authorship
 
 This project represents a collaboration between human creativity and AI assistance--a relatively novel (starting ~2022) yet increasingly common mode of software development:
 
@@ -66,7 +66,7 @@ This project represents a collaboration between human creativity and AI assistan
 
 This represents a new paradigm in software development where humans focus on *what* to build and *how* it should work, while AI handles much of the *implementation*. Every line of AI-generated code was reviewed, tested, and approved by human judgment.
 
-## �🤝 Contributing
+## 🤝 Contributing
 
 Found a bug or have a feature request? Feel free to:
 - Open an issue on GitHub
