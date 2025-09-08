@@ -588,103 +588,103 @@ function App() {
           </Box>
         </Typography>
 
+        {/* Always-visible Toolbar */}
+        <Box sx={{ mt: 3, display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 2, flexWrap: 'wrap' }}>
+
+
+          {/* Export/Copy buttons - always visible */}
+          <ButtonGroup>
+          
+          {/* File management */}
+          <Button
+            startIcon={<CloudUploadIcon />}
+            onClick={handleClick}
+          >
+            Upload PDF
+          </Button>
+            <CopyButton
+              onCopyText={copyToClipboard}
+              onCopyCSV={copyCSVToClipboard}
+              disabled={comments.length === 0 || Object.values(columnVisibility).every(visible => !visible)}
+            />
+            <SaveButton
+              onSaveCSV={saveCSV}
+              onSaveTXT={saveTXT}
+              disabled={comments.length === 0 || Object.values(columnVisibility).every(visible => !visible)}
+            />
+            <Button
+              color='error'
+              startIcon={<ClearIcon />}
+              onClick={resetDocument}
+              disabled={!file && comments.length === 0}
+            >
+              Clear
+            </Button>
+          </ButtonGroup>
+        </Box>
+
         {loading ? (
-          /* Loading State - replaces everything below */
-          <Box sx={{ mt: 6, textAlign: 'center' }}>
+          /* Loading State - only affects content area below toolbar */
+          <Box sx={{ mt: 4, textAlign: 'center' }}>
             <Typography variant="body1" color="textSecondary">
               Extracting comments from {file?.name}
             </Typography>
           </Box>
         ) : (
           <>
-            {/* Upload Button */}
-            <Box sx={{ mt: 3, textAlign: 'center' }}>
-              <Button
-                variant={comments.length > 0 ? "outlined" : "contained"}
-                size="large"
-                startIcon={<CloudUploadIcon />}
-                onClick={handleClick}
-                sx={{ px: 4, py: 1.5 }}
-              >
-                Upload PDF Document
-              </Button>
-              
-              {/* Show filename and unload button when file is loaded */}
-              {file ? (
-                <Box sx={{ mt: 2, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1 }}>
-                  <Typography variant="body1" color="textPrimary">
-                    Selected: {file.name}
-                  </Typography>
-                  <Button
-                    variant="outlined"
-                    size="small"
-                    startIcon={<CloseIcon />}
-                    onClick={unloadFile}
-                    sx={{ px: 1.5, py: 0.5 }}
-                    color="error"
-                  >
-                    Unload
-                  </Button>
-                </Box>
-              ) : (
-                <Typography variant="body2" color="textSecondary" sx={{ mt: 1 }}>
-                  Or drag and drop anywhere on this page
+            {/* Content Area - Upload UI OR Table */}
+            {!file && comments.length === 0 ? (
+              /* Initial Upload UI */
+              <Box sx={{ mt: 4, textAlign: 'center' }}>
+                {/* <Button
+                  variant="contained"
+                  size="large"
+                  startIcon={<CloudUploadIcon />}
+                  onClick={handleClick}
+                  sx={{ px: 4, py: 2 }}
+                >
+                  Upload PDF Document
+                </Button> */}
+                <Typography variant="body2" color="textSecondary" sx={{ mt: 2 }}>
+                  Upload a PDF document or drag and drop anywhere on this page
                 </Typography>
-              )}
-            </Box>
-
-            {/* Error Display */}
-            {error && (
-              <Box sx={{ mt: 3, p: 2, bgcolor: 'error.light', borderRadius: 1 }}>
-                <Typography color="error">{error}</Typography>
               </Box>
-            )}
+            ) : (
+              /* Results/Table Area */
+              <>
+                {/* Error Display */}
+                {error && (
+                  <Box sx={{ mt: 3, p: 2, bgcolor: 'error.light', borderRadius: 1 }}>
+                    <Typography color="error">{error}</Typography>
+                  </Box>
+                )}
 
-            {/* Results Section */}
-            {comments.length > 0 && (
-              <Box sx={{ mt: 3 }}>
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-                  <Typography variant="h6">
-                    Found {comments.length} comment{comments.length !== 1 ? 's' : ''}
-                    {selectedRows.length > 0 
-                        ? ` (${selectedRows.length} selected)`
-                        : ''
-                      }
-                  </Typography>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                    <ColumnSelector
+                {/* Results Section */}
+                {comments.length > 0 && (
+                  <Box sx={{ mt: 3 }}>
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+                      <Typography variant="h6">
+                        Found {comments.length} comment{comments.length !== 1 ? 's' : ''}
+                        {selectedRows.length > 0 
+                            ? ` (${selectedRows.length} selected)`
+                            : ''
+                          } in {fileName}
+                      </Typography>
+                      <ColumnSelector
+                        columnVisibility={columnVisibility}
+                        setColumnVisibility={setColumnVisibility}
+                      />
+                    </Box>
+                    <CommentsTable 
+                      comments={comments} 
+                      loading={loading}
+                      onSelectionChange={handleSelectionChange}
                       columnVisibility={columnVisibility}
                       setColumnVisibility={setColumnVisibility}
                     />
-                    <ButtonGroup variant="outlined">
-                    <CopyButton
-                      onCopyText={copyToClipboard}
-                      onCopyCSV={copyCSVToClipboard}
-                      disabled={Object.values(columnVisibility).every(visible => !visible)}
-                    />
-                    <SaveButton
-                      onSaveCSV={saveCSV}
-                      onSaveTXT={saveTXT}
-                      disabled={Object.values(columnVisibility).every(visible => !visible)}
-                    />
-                    <Button
-                      startIcon={<ClearIcon />}
-                      onClick={resetDocument}
-                      disabled={!file && comments.length === 0}
-                    >
-                      Reset
-                    </Button>
-                    </ButtonGroup>
                   </Box>
-                </Box>
-                <CommentsTable 
-                  comments={comments} 
-                  loading={loading}
-                  onSelectionChange={handleSelectionChange}
-                  columnVisibility={columnVisibility}
-                  setColumnVisibility={setColumnVisibility}
-                />
-              </Box>
+                )}
+              </>
             )}
 
             {/* Full-screen drag overlay */}
