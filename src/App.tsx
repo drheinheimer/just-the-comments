@@ -609,6 +609,15 @@ function App() {
           </ButtonGroup>
         </Box>
 
+        {/* Filename display - centered below toolbar */}
+        {file && (
+          <Box sx={{ mt: 2, textAlign: 'center' }}>
+            <Typography variant="body1" color="textSecondary">
+              <Box component="span" sx={{ fontWeight: 500 }}>Loaded file: {fileName}</Box>
+            </Typography>
+          </Box>
+        )}
+
         {loading ? (
           /* Loading State - only affects content area below toolbar */
           <Box sx={{ mt: 4, textAlign: 'center' }}>
@@ -654,7 +663,7 @@ function App() {
                         {selectedRows.length > 0 
                             ? ` (${selectedRows.length} selected)`
                             : ''
-                          } in {fileName}
+                          }
                       </Typography>
                       <ColumnSelector
                         columnVisibility={columnVisibility}
