@@ -2,7 +2,7 @@ import { useCallback, useState, useEffect } from 'react'
 import Navbar from './components/Navbar'
 import CommentsTable from './components/CommentsTable'
 import { saveAs } from 'file-saver'
-import { Container, Typography, Box, Button, Fab, Select, MenuItem, Checkbox, ListItemText, FormControl, InputLabel, OutlinedInput, Menu, Snackbar, Alert, ButtonGroup } from '@mui/material'
+import { Container, Typography, Box, Button, Fab, Select, MenuItem, Checkbox, ListItemText, FormControl, InputLabel, OutlinedInput, Menu, Snackbar, Alert, ButtonGroup, ThemeProvider, createTheme, CssBaseline } from '@mui/material'
 import { CloudUpload as CloudUploadIcon, KeyboardArrowUp as KeyboardArrowUpIcon, ArrowDropDown as ArrowDropDownIcon, ContentCopy as ContentCopyIcon, Save as SaveIcon, Clear as ClearIcon } from '@mui/icons-material'
 import type { GridRowSelectionModel } from '@mui/x-data-grid'
 
@@ -202,6 +202,30 @@ function App() {
   const [columnVisibility, setColumnVisibility] = useState<{ [key: string]: boolean }>(DEFAULT_COLUMNS);
   const [copySuccess, setCopySuccess] = useState<boolean>(false);
   const [noCommentsWarning, setNoCommentsWarning] = useState<boolean>(false);
+  const [darkMode, setDarkMode] = useState<boolean>(() => {
+    // Check localStorage or system preference
+    const saved = localStorage.getItem('darkMode');
+    if (saved !== null) {
+      return JSON.parse(saved);
+    }
+    return window.matchMedia('(prefers-color-scheme: dark)').matches;
+  });
+
+  // Create theme based on dark mode
+  const theme = createTheme({
+    palette: {
+      mode: darkMode ? 'dark' : 'light',
+    },
+  });
+
+  // Toggle dark mode and save to localStorage
+  const toggleDarkMode = useCallback(() => {
+    setDarkMode(prev => {
+      const newMode = !prev;
+      localStorage.setItem('darkMode', JSON.stringify(newMode));
+      return newMode;
+    });
+  }, []);
 
   const handleSelectionChange = useCallback((selectionModel: GridRowSelectionModel) => {
     if (selectionModel.type === 'include') {
@@ -552,8 +576,9 @@ function App() {
 
 
   return (
-    <>
-      <Navbar />
+    <ThemeProvider theme={theme}>
+      <CssBaseline />
+      <Navbar darkMode={darkMode} onToggleDarkMode={toggleDarkMode} />
 
       {/* Main Content */}
       <Container maxWidth="md" sx={{ mt: 2 }}>
@@ -561,7 +586,7 @@ function App() {
           📝 Extract comments from your PDF documents. 🔒 100% private.{' '}
           <Box 
             component="a" 
-            href="https://github.com/drheinheimer/just-the-comments#readme" 
+            href="https://github.com/fd-labs/just-the-comments#readme" 
             target="_blank" 
             rel="noopener noreferrer"
             sx={{ 
@@ -570,7 +595,7 @@ function App() {
               '&:hover': { textDecoration: 'underline' }
             }}
           >
-            Read more.
+            Learn more.
           </Box>
         </Typography>
 
@@ -776,9 +801,9 @@ function App() {
           mt: 8, 
           py: 3, 
           px: 2, 
-          backgroundColor: 'grey.100',
+          backgroundColor: 'background.paper',
           borderTop: '1px solid',
-          borderColor: 'grey.300'
+          borderColor: 'divider'
         }}
       >
         <Container maxWidth="md">
@@ -787,7 +812,7 @@ function App() {
               Made with ❤️ by{' '}
               <Box 
                 component="a" 
-                href="https://github.com/drheinheimer/just-the-comments" 
+                href="https://github.com/fd-labs" 
                 target="_blank" 
                 rel="noopener noreferrer"
                 sx={{ 
@@ -801,7 +826,7 @@ function App() {
               {' • '}
               <Box 
                 component="a" 
-                href="https://github.com/drheinheimer/just-the-comments" 
+                href="https://github.com/fd-labs/just-the-comments" 
                 target="_blank" 
                 rel="noopener noreferrer"
                 sx={{ 
@@ -816,7 +841,7 @@ function App() {
           </Box>
         </Container>
       </Box>
-    </>
+    </ThemeProvider>
   )
 }
 

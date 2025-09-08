@@ -5,8 +5,15 @@ import Typography from '@mui/material/Typography';
 import IconButton from '@mui/material/IconButton';
 import GitHubIcon from '@mui/icons-material/GitHub';
 import ChatIcon from '@mui/icons-material/Chat';
+import BedtimeIcon from '@mui/icons-material/Bedtime';
+import LightModeIcon from '@mui/icons-material/LightMode';
 
-export default function Navbar() {
+interface NavbarProps {
+  darkMode: boolean;
+  onToggleDarkMode: () => void;
+}
+
+export default function Navbar({ darkMode, onToggleDarkMode }: NavbarProps) {
   return (
     <Box sx={{ flexGrow: 1 }}>
       <AppBar position="static">
@@ -31,8 +38,16 @@ export default function Navbar() {
           </Box>
           <IconButton
             color="inherit"
+            onClick={onToggleDarkMode}
+            aria-label="Toggle dark mode"
+            sx={{ mr: 1 }}
+          >
+            {darkMode ? <LightModeIcon /> : <BedtimeIcon />}
+          </IconButton>
+          <IconButton
+            color="inherit"
             component="a"
-            href="https://github.com/drheinheimer/just-the-comments"
+            href="https://github.com/fd-labs/just-the-comments"
             target="_blank"
             rel="noopener noreferrer"
             aria-label="View source on GitHub"
