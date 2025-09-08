@@ -75,9 +75,9 @@ Found a bug or have a feature request? Feel free to:
 
 ## 💭 Origin Story
 
-**Personal motivation**: This tool was born from the frustration of reviewing academic journals—making detailed notes in PDF comments, then spending precious time manually compiling those notes into a coherent review. I used to rely on SumNotes, but as it grew and became more expensive, I needed a simple, free alternative focused specifically on PDF comment extraction.
+**Personal motivation**: This tool was born from the frustration of reviewing academic journals—making detailed notes in PDF comments, then spending precious time manually pulling those notes into my review. I used to rely on [Sumnotes](https://www.sumnotes.net), but as it grew and became more expensive, I needed a simple, free alternative focused specifically on PDF comment extraction.
 
-**Commitment to free access**: Unlike commercial alternatives, this tool will always be 100% free. Future support for other document formats (Word, etc.) will maintain this commitment, though [donations welcome](https://ko-fi.com/davidrheinheimer) ☕ ;).
+**Commitment to free access**: Unlike commercial alternatives, this tool will always be 100% free. Future support for other document formats (Word, etc.) will maintain this commitment, though [donations welcome](https://ko-fi.com/davidrheinheimer) ☕ 🙏
 
 ## 📝 License
 
