@@ -201,6 +201,7 @@ function App() {
   const [selectedRows, setSelectedRows] = useState<number[]>([]);
   const [columnVisibility, setColumnVisibility] = useState<{ [key: string]: boolean }>(DEFAULT_COLUMNS);
   const [copySuccess, setCopySuccess] = useState<boolean>(false);
+  const [noCommentsWarning, setNoCommentsWarning] = useState<boolean>(false);
 
   const handleSelectionChange = useCallback((selectionModel: GridRowSelectionModel) => {
     if (selectionModel.type === 'include') {
@@ -371,17 +372,6 @@ function App() {
     }
   }, [comments, selectedRows, columnVisibility]);
 
-  const resetDocument = useCallback(() => {
-    setFile(null);
-    setFileName("");
-    setComments([]);
-    setError("");
-    setLoading(false);
-    setSelectedRows([]);
-    // Reset column visibility to defaults
-    setColumnVisibility(DEFAULT_COLUMNS);
-  }, []);
-
   const unloadFile = useCallback(() => {
     setFile(null);
     setFileName("");
@@ -475,11 +465,7 @@ function App() {
 
       setComments(found);
       if (found.length === 0) {
-        // notifications.show({
-        //   title: "No comments detected",
-        //   message: "Parsing completed but found no annotations. PDF may have flattened comments.",
-        //   color: "blue",
-        // });
+        setNoCommentsWarning(true);
       }
     } catch (err: any) {
       console.error(err);
@@ -615,7 +601,7 @@ function App() {
             <Button
               color='error'
               startIcon={<ClearIcon />}
-              onClick={resetDocument}
+              onClick={unloadFile}
               disabled={!file && comments.length === 0}
             >
               Clear
@@ -660,7 +646,7 @@ function App() {
                 )}
 
                 {/* Results Section */}
-                {comments.length > 0 && (
+                {file && (
                   <Box sx={{ mt: 3 }}>
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
                       <Typography variant="h6">
@@ -753,6 +739,24 @@ function App() {
           sx={{ width: '100%' }}
         >
           Copied to clipboard!
+        </Alert>
+      </Snackbar>
+
+      {/* No comments warning toast */}
+      <Snackbar
+        open={noCommentsWarning}
+        autoHideDuration={5000}
+        onClose={() => setNoCommentsWarning(false)}
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+        sx={{ mt: 8 }} // Add margin-top to clear the navbar
+      >
+        <Alert 
+          onClose={() => setNoCommentsWarning(false)} 
+          severity="error"
+          variant='filled'
+          sx={{ width: '100%' }}
+        >
+          No comments found. The PDF may have flattened annotations or no comments were added.
         </Alert>
       </Snackbar>
 
